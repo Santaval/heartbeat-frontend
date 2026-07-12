@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Message {
+  id        Int        @id @default(autoincrement())
+  text      String
+  createdAt DateTime   @default(now())
+  rotations Rotation[]
+}
+
+model ImportantDate {
+  id        Int    @id @default(autoincrement())
+  date      String // "DD/MM"
+  label     String
+  sortOrder Int    @default(0)
+}
+
+model DateIdea {
+  id        Int      @id @default(1) // singleton row (id = 1)
+  idea      String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
+model Rotation {
+  id        Int      @id @default(1) // singleton row (id = 1)
+  messageId Int?
+  message   Message? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  rotatedAt DateTime @default(now())
+}
+
+model DateResponse {
+  id        Int      @id @default(autoincrement())
+  accepted  Boolean
+  createdAt DateTime @default(now())
+}
+
+model Ping {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+}
+
+model Reaction {
+  id        Int      @id @default(autoincrement())
+  value     String   // "corazon" | "sonrisa" | "luego"
+  createdAt DateTime @default(now())
+}
