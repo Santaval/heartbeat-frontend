@@ -49,3 +49,16 @@ export async function getCurrentMessage(): Promise<{ text: string; updatedAt: st
 
   return { text: rotation.message?.text ?? "", updatedAt: formatUpdatedAt(rotation.rotatedAt) };
 }
+
+// Force an immediate rotation (advance the Rotation singleton now), preferring a different message.
+export async function rotateNow(): Promise<{ text: string; updatedAt: string }> {
+  const rotation = await prisma.rotation.findUnique({ where: { id: 1 } });
+  const next = await pickRandomMessage(rotation?.messageId ?? undefined);
+  const updated = await prisma.rotation.upsert({
+    where: { id: 1 },
+    create: { id: 1, messageId: next?.id ?? null, rotatedAt: new Date() },
+    update: { messageId: next?.id ?? null, rotatedAt: new Date() },
+    include: { message: true },
+  });
+  return { text: updated.message?.text ?? "", updatedAt: formatUpdatedAt(updated.rotatedAt) };
+}
